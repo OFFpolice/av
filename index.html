@@ -4,451 +4,784 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AVDB Videos</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#070709;
+  --surface:#0f0f12;
+  --border:rgba(255,255,255,.06);
+  --accent:#e8003a;
+  --accent2:#ff4d6d;
+  --text:#f0f0f2;
+  --muted:#606070;
+  --card:#0c0c10;
 }
 
 body{
-    font-family:'Inter',sans-serif;
-    background:#060606;
-    color:#fff;
-    overflow-x:hidden;
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  min-height:100vh;
 }
 
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+  opacity:.5;
+}
+
+/* ── HEADER ── */
 header{
-    position:sticky;
-    top:0;
-    z-index:100;
-    backdrop-filter:blur(20px);
-    background:rgba(10,10,10,.75);
-    border-bottom:1px solid rgba(255,255,255,.08);
-    padding:16px;
+  position:sticky;
+  top:0;
+  z-index:200;
+  background:rgba(7,7,9,.85);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
 }
 
-.header-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
+.header-inner{
+  max-width:1600px;
+  margin:0 auto;
+  height:64px;
+  display:flex;
+  align-items:center;
+  gap:20px;
 }
 
 .logo{
-    font-size:24px;
-    font-weight:700;
-    background:linear-gradient(90deg,#ff003c,#ff5f7e);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:22px;
+  letter-spacing:-.5px;
+  color:var(--text);
+  flex-shrink:0;
+}
+.logo span{color:var(--accent);}
+
+.search-wrap{
+  flex:1;
+  max-width:540px;
+  position:relative;
+}
+.search-wrap input{
+  width:100%;
+  height:40px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:0 40px 0 16px;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  outline:none;
+  transition:.2s;
+}
+.search-wrap input:focus{border-color:rgba(232,0,58,.4);background:rgba(255,255,255,.07);}
+.search-icon{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  pointer-events:none;
+  font-size:16px;
 }
 
-.stats{
-    margin-top:12px;
-    color:#888;
-    font-size:13px;
+.header-stats{
+  margin-left:auto;
+  font-size:13px;
+  color:var(--muted);
+  flex-shrink:0;
+  font-variant-numeric:tabular-nums;
 }
 
-.container{
-    padding:18px;
+/* ── PROGRESS BAR ── */
+.progress-bar{
+  position:fixed;
+  top:0;
+  left:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  z-index:999;
+  transition:width .3s ease;
+  box-shadow:0 0 12px var(--accent);
 }
 
+/* ── FILTERS ── */
+.filters{
+  padding:14px 24px;
+  max-width:1600px;
+  margin:0 auto;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.filter-label{font-size:12px;color:var(--muted);margin-right:4px;}
+.filter-btn{
+  padding:6px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  cursor:pointer;
+  transition:.15s;
+  white-space:nowrap;
+}
+.filter-btn:hover,.filter-btn.active{
+  border-color:var(--accent);
+  color:var(--text);
+  background:rgba(232,0,58,.12);
+}
+
+/* ── MAIN ── */
+main{
+  max-width:1600px;
+  margin:0 auto;
+  padding:8px 24px 80px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── GRID ── */
 .video-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-    gap:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:16px;
 }
 
+/* ── CARD ── */
 .card{
-    position:relative;
-    overflow:hidden;
-    border-radius:24px;
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.06);
-    transition:.25s ease;
-    cursor:pointer;
+  background:var(--card);
+  border-radius:16px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+  animation:fadeIn .3s ease both;
 }
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
 .card:hover{
-    transform:translateY(-5px);
-    border-color:rgba(255,0,60,.4);
+  transform:translateY(-4px);
+  border-color:rgba(232,0,58,.35);
+  box-shadow:0 16px 40px rgba(0,0,0,.5),0 0 0 1px rgba(232,0,58,.15);
 }
 
 .thumb{
-    position:relative;
-    width:100%;
-    aspect-ratio:16/9;
-    overflow:hidden;
-    background:#111;
+  position:relative;
+  aspect-ratio:16/9;
+  background:#0a0a0e;
+  overflow:hidden;
 }
-
 .thumb img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    transition:.35s;
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform .35s ease;
+}
+.card:hover .thumb img{transform:scale(1.07);}
+
+.thumb-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%);
+  opacity:0;
+  transition:.22s;
+}
+.card:hover .thumb-overlay{opacity:1;}
+
+.play-btn{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.8);
+  width:52px;height:52px;
+  border-radius:50%;
+  background:rgba(232,0,58,.9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  opacity:0;
+  transition:.22s;
+  box-shadow:0 0 30px rgba(232,0,58,.6);
+}
+.card:hover .play-btn{opacity:1;transform:translate(-50%,-50%) scale(1);}
+
+.no-embed-badge{
+  position:absolute;
+  top:8px;right:8px;
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;
+  font-size:10px;
+  color:#888;
+  padding:3px 7px;
 }
 
-.card:hover img{
-    transform:scale(1.05);
+.card-body{padding:12px 14px 14px;}
+
+.card-title{
+  font-family:'Syne',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  line-height:1.4;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  color:var(--text);
 }
 
-.play{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:64px;
-    height:64px;
-    border-radius:50%;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(10px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:24px;
+.card-meta{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
 }
-
-.content{
-    padding:14px;
-}
-
-.title{
-    font-size:15px;
-    font-weight:600;
-    line-height:1.4;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
-}
-
-.meta{
-    margin-top:10px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-}
-
 .badge{
-    padding:6px 10px;
-    border-radius:999px;
-    background:rgba(255,255,255,.06);
-    font-size:12px;
-    color:#bbb;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.05);
+  font-size:11px;
+  color:var(--muted);
+  border:1px solid var(--border);
 }
+.badge.source{color:var(--accent2);border-color:rgba(255,77,109,.2);background:rgba(255,77,109,.06);}
 
+/* ── LOADER ── */
 .loader{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:40px 0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:60px 0;gap:16px;
 }
-
 .spinner{
-    width:48px;
-    height:48px;
-    border:4px solid rgba(255,255,255,.1);
-    border-top-color:#ff003c;
-    border-radius:50%;
-    animation:spin .8s linear infinite;
+  width:40px;height:40px;
+  border:3px solid rgba(255,255,255,.08);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-text{font-size:13px;color:var(--muted);}
+
+/* ── SENTINEL ── */
+#sentinel{height:1px;}
+
+/* ── EMPTY ── */
+.empty{
+  text-align:center;padding:80px 20px;
+  color:var(--muted);font-size:15px;
 }
 
-@keyframes spin{
-    to{
-        transform:rotate(360deg);
-    }
-}
-
+/* ── MODAL ── */
 .modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.88);
-    z-index:999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
+  position:fixed;inset:0;
+  z-index:500;
+  background:rgba(0,0,0,.92);
+  backdrop-filter:blur(12px);
+  display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+  animation:fadeBg .2s ease;
 }
+@keyframes fadeBg{from{opacity:0;}to{opacity:1;}}
+.modal.active{display:flex;}
 
-.modal.active{
-    display:flex;
+.modal-box{
+  width:100%;
+  max-width:1100px;
+  background:var(--surface);
+  border-radius:24px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  position:relative;
+  animation:slideUp .25s ease;
+  max-height:90vh;
+  display:flex;flex-direction:column;
 }
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-.modal-content{
-    width:100%;
-    max-width:1200px;
-    background:#111;
-    border-radius:28px;
-    overflow:hidden;
-    position:relative;
+.close-btn{
+  position:absolute;top:14px;right:14px;
+  width:40px;height:40px;
+  border:none;border-radius:50%;
+  background:rgba(255,255,255,.07);
+  color:var(--text);font-size:18px;
+  cursor:pointer;z-index:10;
+  transition:.15s;
+  display:flex;align-items:center;justify-content:center;
 }
+.close-btn:hover{background:rgba(232,0,58,.25);}
 
-.close{
-    position:absolute;
-    top:16px;
-    right:16px;
-    width:48px;
-    height:48px;
-    border:none;
-    border-radius:50%;
-    background:rgba(255,255,255,.08);
-    color:#fff;
-    font-size:20px;
-    cursor:pointer;
-    z-index:20;
+.player-wrap{
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+  flex-shrink:0;
 }
-
-.player{
-    width:100%;
-    aspect-ratio:16/9;
-    background:#000;
+.player-wrap iframe{width:100%;height:100%;border:none;display:block;}
+.player-wrap .no-video{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:16px;flex-direction:column;gap:12px;
 }
-
-.player iframe{
-    width:100%;
-    height:100%;
-    border:none;
-}
+.no-video-icon{font-size:48px;opacity:.3;}
 
 .modal-info{
-    padding:24px;
+  padding:20px 24px 24px;
+  overflow-y:auto;
 }
-
 .modal-title{
-    font-size:24px;
-    font-weight:700;
-    line-height:1.4;
+  font-family:'Syne',sans-serif;
+  font-weight:700;font-size:20px;
+  line-height:1.4;padding-right:50px;
 }
-
+.modal-meta{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px;}
 .modal-desc{
-    margin-top:14px;
-    color:#aaa;
-    line-height:1.7;
+  margin-top:14px;
+  color:#888;font-size:14px;
+  line-height:1.75;
+  max-height:120px;overflow-y:auto;
 }
 
-.empty{
-    text-align:center;
-    padding:60px 20px;
-    color:#888;
-    font-size:15px;
+/* Episode selector */
+.episodes{margin-top:16px;}
+.episodes-label{font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+.ep-list{display:flex;flex-wrap:wrap;gap:6px;}
+.ep-btn{
+  padding:6px 12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  cursor:pointer;
+  transition:.15s;
+}
+.ep-btn:hover,.ep-btn.active{
+  border-color:var(--accent);
+  color:var(--text);
+  background:rgba(232,0,58,.12);
 }
 
-@media(max-width:700px){
-
-    .video-grid{
-        grid-template-columns:1fr;
-    }
-
-    .modal-title{
-        font-size:20px;
-    }
-
+@media(max-width:640px){
+  .header-stats{display:none;}
+  .video-grid{grid-template-columns:1fr 1fr;}
+  .modal-title{font-size:16px;}
+  .modal-info{padding:14px 16px 18px;}
+}
+@media(max-width:400px){
+  .video-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
 
-<header>
-    <div class="header-top">
-        <div class="logo">AVDB</div>
-    </div>
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
 
-    <div class="stats" id="stats">
-        Загрузка видео...
+<header>
+  <div class="header-inner">
+    <div class="logo">AV<span>DB</span></div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Поиск по названию…" autocomplete="off">
+      <span class="search-icon">⌕</span>
     </div>
+    <div class="header-stats" id="headerStats">Загрузка…</div>
+  </div>
 </header>
 
-<div class="container">
-    <div class="video-grid" id="videoGrid"></div>
-
-    <div class="loader" id="loader">
-        <div class="spinner"></div>
-    </div>
-
-    <div class="empty" id="empty" style="display:none;">
-        Ничего не найдено
-    </div>
+<div class="filters" id="filtersBar">
+  <span class="filter-label">Тег:</span>
 </div>
 
+<main>
+  <div class="video-grid" id="videoGrid"></div>
+  <div id="loader" class="loader">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loaderText">Загрузка страницы 1…</div>
+  </div>
+  <div class="empty" id="empty" style="display:none">Ничего не найдено</div>
+  <div id="sentinel"></div>
+</main>
+
+<!-- MODAL -->
 <div class="modal" id="modal">
-    <div class="modal-content">
-
-        <button class="close" id="closeModal">✕</button>
-
-        <div class="player" id="player"></div>
-
-        <div class="modal-info">
-            <div class="modal-title" id="modalTitle"></div>
-            <div class="modal-desc" id="modalDesc"></div>
-        </div>
-
+  <div class="modal-box">
+    <button class="close-btn" id="closeBtn">✕</button>
+    <div class="player-wrap" id="playerWrap"></div>
+    <div class="modal-info">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-meta" id="modalMeta"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="episodes" id="episodesWrap" style="display:none">
+        <div class="episodes-label">Серии</div>
+        <div class="ep-list" id="epList"></div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-const videoGrid = document.getElementById('videoGrid');
-const loader = document.getElementById('loader');
-const stats = document.getElementById('stats');
-const empty = document.getElementById('empty');
+/* ─────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────── */
 
-const modal = document.getElementById('modal');
-const closeModal = document.getElementById('closeModal');
-const player = document.getElementById('player');
-const modalTitle = document.getElementById('modalTitle');
-const modalDesc = document.getElementById('modalDesc');
+/**
+ * Parse vod_play_list / vod_play_url to extract episodes.
+ * API can return:
+ *   vod_play_from: "source1$$$source2"  ($$$ separator)
+ *   vod_play_url:  "ep1$url1#ep2$url2#..."  (per source, $$$ separated)
+ *
+ * Returns array of { name, url } objects.
+ */
+function parseEpisodes(video) {
+  const fromRaw  = video.vod_play_from || '';
+  const urlRaw   = video.vod_play_url  || '';
 
-let allVideos = [];
+  if (!urlRaw) return [];
 
-async function fetchAllVideos() {
+  // Multiple sources separated by $$$
+  const sources  = urlRaw.split('$$$');
+  const fromList = fromRaw.split('$$$');
 
-    let page = 1;
+  const episodes = [];
 
-    while (true) {
-
-        const url = `https://avdbapi.com/api.php/provide/vod?ac=detail&pg=${page}&pagesize=100`;
-
-        try {
-
-            const res = await fetch(url);
-            const data = await res.json();
-
-            if (data.list && data.list.length) {
-                allVideos.push(...data.list);
-            }
-
-            stats.innerText = `Загружено видео: ${allVideos.length.toLocaleString()}`;
-
-            renderVideos(allVideos);
-
-            if (page >= data.pagecount) break;
-
-            page++;
-
-        } catch (err) {
-            console.error(err);
-            break;
-        }
-    }
-
-    loader.style.display = 'none';
-
-    stats.innerText = `Всего видео: ${allVideos.length.toLocaleString()}`;
-}
-
-function renderVideos(videos) {
-
-    videoGrid.innerHTML = '';
-
-    if (!videos.length) {
-        empty.style.display = 'block';
-        return;
-    }
-
-    empty.style.display = 'none';
-
-    videos.forEach(video => {
-
-        const title = video.name || 'No title';
-
-        const thumb =
-            video.thumb_url ||
-            video.poster_url ||
-            'https://via.placeholder.com/800x450?text=No+Image';
-
-        const country = video.country || 'Unknown';
-
-        const tag = video.tag || 'Video';
-
-        const embed =
-            video?.Full?.link_embed ||
-            '';
-
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        card.innerHTML = `
-            <div class="thumb">
-                <img src="${thumb}" loading="lazy">
-                <div class="play">▶</div>
-            </div>
-
-            <div class="content">
-                <div class="title">${title}</div>
-
-                <div class="meta">
-                    <div class="badge">${country}</div>
-                    <div class="badge">${tag}</div>
-                </div>
-            </div>
-        `;
-
-        card.addEventListener('click', () => {
-            openModal(video, embed);
-        });
-
-        videoGrid.appendChild(card);
-
+  sources.forEach((sourceBlock, si) => {
+    if (!sourceBlock.trim()) return;
+    const sourceName = fromList[si] || `src${si+1}`;
+    // Episodes within source separated by #
+    const eps = sourceBlock.split('#');
+    eps.forEach(ep => {
+      if (!ep.trim()) return;
+      // Each ep: "Title$URL"  or just "URL"
+      const parts = ep.split('$');
+      const url   = parts.length >= 2 ? parts[parts.length-1].trim() : parts[0].trim();
+      const name  = parts.length >= 2 ? parts.slice(0,-1).join('$').trim() : '';
+      if (url) episodes.push({ name: name || `Эп.${episodes.length+1}`, url, source: sourceName });
     });
+  });
+
+  return episodes;
 }
 
-function openModal(video, embed) {
-
-    modal.classList.add('active');
-
-    modalTitle.innerText = video.name || 'No title';
-
-    modalDesc.innerText =
-        video.description ||
-        'Описание отсутствует';
-
-    if (embed) {
-
-        player.innerHTML = `
-            <iframe
-                src="${embed}"
-                allowfullscreen
-                referrerpolicy="origin"
-            ></iframe>
-        `;
-
-    } else {
-
-        player.innerHTML = `
-            <div style="
-                width:100%;
-                height:100%;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                color:#888;
-                font-size:18px;
-            ">
-                Видео недоступно
-            </div>
-        `;
-    }
+/** Try to detect if a URL is an embeddable iframe src or a direct m3u8/mp4 */
+function isDirectMedia(url) {
+  return /\.(m3u8|mp4|webm|mkv|avi)(\?|$)/i.test(url);
 }
 
-closeModal.addEventListener('click', closePlayer);
+/** Build iframe or video player HTML */
+function buildPlayer(url) {
+  if (!url) return `<div class="no-video"><div class="no-video-icon">⊘</div><span>Видео недоступно</span></div>`;
 
-modal.addEventListener('click', e => {
-    if (e.target === modal) {
-        closePlayer();
+  if (isDirectMedia(url)) {
+    return `<video controls autoplay style="width:100%;height:100%;background:#000" src="${url}"></video>`;
+  }
+
+  // Treat as embed URL
+  return `<iframe src="${url}" allowfullscreen allow="autoplay; fullscreen" referrerpolicy="origin"></iframe>`;
+}
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let allVideos    = [];
+let filtered     = [];
+let rendered     = 0;
+const PAGE_SIZE  = 48;   // cards rendered per IntersectionObserver tick
+let activeTag    = 'all';
+let searchQuery  = '';
+let fetching     = false;
+
+/* ─────────────────────────────────────────
+   DOM
+───────────────────────────────────────── */
+const videoGrid   = document.getElementById('videoGrid');
+const loader      = document.getElementById('loader');
+const loaderText  = document.getElementById('loaderText');
+const headerStats = document.getElementById('headerStats');
+const emptyEl     = document.getElementById('empty');
+const sentinel    = document.getElementById('sentinel');
+const filtersBar  = document.getElementById('filtersBar');
+const searchInput = document.getElementById('searchInput');
+const progressBar = document.getElementById('progressBar');
+
+const modal        = document.getElementById('modal');
+const closeBtn     = document.getElementById('closeBtn');
+const playerWrap   = document.getElementById('playerWrap');
+const modalTitle   = document.getElementById('modalTitle');
+const modalMeta    = document.getElementById('modalMeta');
+const modalDesc    = document.getElementById('modalDesc');
+const episodesWrap = document.getElementById('episodesWrap');
+const epList       = document.getElementById('epList');
+
+/* ─────────────────────────────────────────
+   FETCH ALL VIDEOS
+───────────────────────────────────────── */
+async function fetchAllVideos() {
+  let page = 1;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
+    const url = `https://avdbapi.com/api.php/provide/vod?ac=detail&pg=${page}&pagesize=100`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+
+      if (data.list && data.list.length) {
+        allVideos.push(...data.list);
+      }
+
+      // First response tells us total pages
+      if (page === 1) {
+        totalPages = data.pagecount || 1;
+      }
+
+      const pct = Math.min(98, Math.round((page / totalPages) * 100));
+      progressBar.style.width = pct + '%';
+      loaderText.textContent = `Загрузка страницы ${page} из ${totalPages} (${allVideos.length.toLocaleString()} видео)…`;
+      headerStats.textContent = `${allVideos.length.toLocaleString()} видео`;
+
+      // Re-apply filter & render incrementally every 5 pages
+      if (page % 5 === 0 || page === totalPages) {
+        applyFilter();
+      }
+
+      page++;
+    } catch (err) {
+      console.error('Fetch error page', page, err);
+      // Retry once
+      await new Promise(r => setTimeout(r, 1500));
+      try {
+        const res  = await fetch(`https://avdbapi.com/api.php/provide/vod?ac=detail&pg=${page}&pagesize=100`);
+        const data = await res.json();
+        if (data.list) allVideos.push(...data.list);
+        page++;
+      } catch {
+        break;
+      }
     }
+  }
+
+  // Done
+  progressBar.style.width = '100%';
+  setTimeout(() => { progressBar.style.opacity = '0'; }, 600);
+  loader.style.display = 'none';
+  headerStats.textContent = `${allVideos.length.toLocaleString()} видео`;
+
+  buildTagFilters();
+  applyFilter();
+}
+
+/* ─────────────────────────────────────────
+   TAG FILTERS
+───────────────────────────────────────── */
+function buildTagFilters() {
+  const tagCounts = {};
+  allVideos.forEach(v => {
+    const tags = (v.vod_tag || v.type_name || '').split(',').map(t => t.trim()).filter(Boolean);
+    tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+  });
+
+  // Top 10 tags by count
+  const topTags = Object.entries(tagCounts)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 12)
+    .map(([t]) => t);
+
+  filtersBar.innerHTML = '<span class="filter-label">Фильтр:</span>';
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.textContent = 'Все';
+  allBtn.dataset.tag = 'all';
+  allBtn.onclick = () => setTag('all');
+  filtersBar.appendChild(allBtn);
+
+  topTags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = tag;
+    btn.dataset.tag = tag;
+    btn.onclick = () => setTag(tag);
+    filtersBar.appendChild(btn);
+  });
+}
+
+function setTag(tag) {
+  activeTag = tag;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tag === tag);
+  });
+  applyFilter();
+}
+
+/* ─────────────────────────────────────────
+   SEARCH
+───────────────────────────────────────── */
+let searchTimeout;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchQuery = searchInput.value.trim().toLowerCase();
+    applyFilter();
+  }, 250);
 });
 
-function closePlayer() {
-    modal.classList.remove('active');
-    player.innerHTML = '';
+/* ─────────────────────────────────────────
+   FILTER + RENDER
+───────────────────────────────────────── */
+function applyFilter() {
+  filtered = allVideos.filter(v => {
+    const name = (v.vod_name || v.name || '').toLowerCase();
+    const tags = (v.vod_tag || v.type_name || '').toLowerCase();
+
+    const matchSearch = !searchQuery || name.includes(searchQuery);
+    const matchTag    = activeTag === 'all' || tags.includes(activeTag.toLowerCase());
+
+    return matchSearch && matchTag;
+  });
+
+  rendered = 0;
+  videoGrid.innerHTML = '';
+  emptyEl.style.display = filtered.length ? 'none' : 'block';
+  renderNextBatch();
 }
 
+function renderNextBatch() {
+  if (rendered >= filtered.length) return;
+
+  const batch = filtered.slice(rendered, rendered + PAGE_SIZE);
+  const frag  = document.createDocumentFragment();
+
+  batch.forEach((video, i) => {
+    const card = createCard(video, i);
+    frag.appendChild(card);
+  });
+
+  videoGrid.appendChild(frag);
+  rendered += batch.length;
+}
+
+/* ─────────────────────────────────────────
+   CREATE CARD
+───────────────────────────────────────── */
+function createCard(video, animIdx) {
+  const name    = video.vod_name || video.name || 'Без названия';
+  const thumb   = video.vod_pic  || video.thumb_url || '';
+  const country = video.vod_area || video.country   || '';
+  const tag     = video.type_name || video.vod_tag  || '';
+  const year    = video.vod_year  || '';
+  const episodes= parseEpisodes(video);
+  const hasEmbed= episodes.length > 0;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.animationDelay = (animIdx % PAGE_SIZE * 18) + 'ms';
+
+  card.innerHTML = `
+    <div class="thumb">
+      ${thumb ? `<img src="${thumb}" loading="lazy" alt="${name}" onerror="this.style.display='none'">` : ''}
+      <div class="thumb-overlay"></div>
+      <div class="play-btn">▶</div>
+      ${!hasEmbed ? '<div class="no-embed-badge">нет плеера</div>' : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${name}</div>
+      <div class="card-meta">
+        ${tag     ? `<span class="badge">${tag}</span>`     : ''}
+        ${country ? `<span class="badge">${country}</span>` : ''}
+        ${year    ? `<span class="badge">${year}</span>`    : ''}
+        ${episodes.length > 1 ? `<span class="badge source">${episodes.length} серий</span>` : ''}
+      </div>
+    </div>
+  `;
+
+  card.addEventListener('click', () => openModal(video, episodes));
+  return card;
+}
+
+/* ─────────────────────────────────────────
+   MODAL
+───────────────────────────────────────── */
+function openModal(video, episodes) {
+  const name  = video.vod_name || video.name || 'Без названия';
+  const desc  = video.vod_content || video.description || 'Описание отсутствует';
+  const country = video.vod_area   || video.country  || '';
+  const tag     = video.type_name  || video.vod_tag  || '';
+  const year    = video.vod_year   || '';
+  const lang    = video.vod_lang   || '';
+
+  modalTitle.textContent = name;
+  modalDesc.textContent  = desc;
+
+  modalMeta.innerHTML = [country,tag,year,lang]
+    .filter(Boolean)
+    .map(s => `<span class="badge">${s}</span>`)
+    .join('');
+
+  // Episodes
+  epList.innerHTML = '';
+  if (episodes.length > 1) {
+    episodesWrap.style.display = 'block';
+    episodes.forEach((ep, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'ep-btn' + (i===0 ? ' active' : '');
+      btn.textContent = ep.name;
+      btn.onclick = () => {
+        document.querySelectorAll('.ep-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        playerWrap.innerHTML = buildPlayer(ep.url);
+      };
+      epList.appendChild(btn);
+    });
+  } else {
+    episodesWrap.style.display = 'none';
+  }
+
+  // Load first episode (or nothing)
+  const firstUrl = episodes.length ? episodes[0].url : '';
+  playerWrap.innerHTML = buildPlayer(firstUrl);
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  modal.classList.remove('active');
+  playerWrap.innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+closeBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if(e.target===modal) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* ─────────────────────────────────────────
+   INFINITE SCROLL (IntersectionObserver)
+───────────────────────────────────────── */
+const io = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) renderNextBatch();
+}, { rootMargin: '300px' });
+
+io.observe(sentinel);
+
+/* ─────────────────────────────────────────
+   BOOT
+───────────────────────────────────────── */
 fetchAllVideos();
 </script>
-
 </body>
 </html>
