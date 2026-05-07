@@ -47,27 +47,6 @@ header{
     -webkit-text-fill-color:transparent;
 }
 
-.search-box{
-    margin-top:14px;
-}
-
-.search-input{
-    width:100%;
-    height:50px;
-    border:none;
-    outline:none;
-    border-radius:18px;
-    background:rgba(255,255,255,.06);
-    color:#fff;
-    padding:0 18px;
-    font-size:15px;
-    backdrop-filter:blur(12px);
-}
-
-.search-input::placeholder{
-    color:#999;
-}
-
 .stats{
     margin-top:12px;
     color:#888;
@@ -279,10 +258,6 @@ header{
         <div class="logo">AVDB</div>
     </div>
 
-    <div class="search-box">
-        <input type="text" class="search-input" id="searchInput" placeholder="Поиск видео...">
-    </div>
-
     <div class="stats" id="stats">
         Загрузка видео...
     </div>
@@ -318,7 +293,6 @@ header{
 <script>
 const videoGrid = document.getElementById('videoGrid');
 const loader = document.getElementById('loader');
-const searchInput = document.getElementById('searchInput');
 const stats = document.getElementById('stats');
 const empty = document.getElementById('empty');
 
@@ -329,7 +303,6 @@ const modalTitle = document.getElementById('modalTitle');
 const modalDesc = document.getElementById('modalDesc');
 
 let allVideos = [];
-let filteredVideos = [];
 
 async function fetchAllVideos() {
 
@@ -348,7 +321,7 @@ async function fetchAllVideos() {
                 allVideos.push(...data.list);
             }
 
-            stats.innerText = `Загружено видео: ${allVideos.length}`;
+            stats.innerText = `Загружено видео: ${allVideos.length.toLocaleString()}`;
 
             renderVideos(allVideos);
 
@@ -363,8 +336,6 @@ async function fetchAllVideos() {
     }
 
     loader.style.display = 'none';
-
-    filteredVideos = allVideos;
 
     stats.innerText = `Всего видео: ${allVideos.length.toLocaleString()}`;
 }
@@ -475,34 +446,6 @@ function closePlayer() {
     modal.classList.remove('active');
     player.innerHTML = '';
 }
-
-searchInput.addEventListener('input', e => {
-
-    const value = e.target.value.toLowerCase().trim();
-
-    filteredVideos = allVideos.filter(video => {
-
-        const title =
-            (video.name || '').toLowerCase();
-
-        const original =
-            (video.original_name || '').toLowerCase();
-
-        const desc =
-            (video.description || '').toLowerCase();
-
-        return (
-            title.includes(value) ||
-            original.includes(value) ||
-            desc.includes(value)
-        );
-    });
-
-    stats.innerText =
-        `Найдено: ${filteredVideos.length.toLocaleString()}`;
-
-    renderVideos(filteredVideos);
-});
 
 fetchAllVideos();
 </script>
