@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVDB Videos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#060606;
+    color:#fff;
+    overflow-x:hidden;
+}
+
+header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    backdrop-filter:blur(20px);
+    background:rgba(10,10,10,.75);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    padding:16px;
+}
+
+.header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:700;
+    background:linear-gradient(90deg,#ff003c,#ff5f7e);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.search-box{
+    margin-top:14px;
+}
+
+.search-input{
+    width:100%;
+    height:50px;
+    border:none;
+    outline:none;
+    border-radius:18px;
+    background:rgba(255,255,255,.06);
+    color:#fff;
+    padding:0 18px;
+    font-size:15px;
+    backdrop-filter:blur(12px);
+}
+
+.search-input::placeholder{
+    color:#999;
+}
+
+.stats{
+    margin-top:12px;
+    color:#888;
+    font-size:13px;
+}
+
+.container{
+    padding:18px;
+}
+
+.video-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:18px;
+}
+
+.card{
+    position:relative;
+    overflow:hidden;
+    border-radius:24px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
+    transition:.25s ease;
+    cursor:pointer;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:rgba(255,0,60,.4);
+}
+
+.thumb{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    overflow:hidden;
+    background:#111;
+}
+
+.thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:.35s;
+}
+
+.card:hover img{
+    transform:scale(1.05);
+}
+
+.play{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(10px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+}
+
+.content{
+    padding:14px;
+}
+
+.title{
+    font-size:15px;
+    font-weight:600;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+
+.meta{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.badge{
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.06);
+    font-size:12px;
+    color:#bbb;
+}
+
+.loader{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 0;
+}
+
+.spinner{
+    width:48px;
+    height:48px;
+    border:4px solid rgba(255,255,255,.1);
+    border-top-color:#ff003c;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.88);
+    z-index:999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal.active{
+    display:flex;
+}
+
+.modal-content{
+    width:100%;
+    max-width:1200px;
+    background:#111;
+    border-radius:28px;
+    overflow:hidden;
+    position:relative;
+}
+
+.close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:48px;
+    height:48px;
+    border:none;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:20px;
+    cursor:pointer;
+    z-index:20;
+}
+
+.player{
+    width:100%;
+    aspect-ratio:16/9;
+    background:#000;
+}
+
+.player iframe{
+    width:100%;
+    height:100%;
+    border:none;
+}
+
+.modal-info{
+    padding:24px;
+}
+
+.modal-title{
+    font-size:24px;
+    font-weight:700;
+    line-height:1.4;
+}
+
+.modal-desc{
+    margin-top:14px;
+    color:#aaa;
+    line-height:1.7;
+}
+
+.empty{
+    text-align:center;
+    padding:60px 20px;
+    color:#888;
+    font-size:15px;
+}
+
+@media(max-width:700px){
+
+    .video-grid{
+        grid-template-columns:1fr;
+    }
+
+    .modal-title{
+        font-size:20px;
+    }
+
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="logo">AVDB</div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" class="search-input" id="searchInput" placeholder="Поиск видео...">
+    </div>
+
+    <div class="stats" id="stats">
+        Загрузка видео...
+    </div>
+</header>
+
+<div class="container">
+    <div class="video-grid" id="videoGrid"></div>
+
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="empty" id="empty" style="display:none;">
+        Ничего не найдено
+    </div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+
+        <button class="close" id="closeModal">✕</button>
+
+        <div class="player" id="player"></div>
+
+        <div class="modal-info">
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-desc" id="modalDesc"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const videoGrid = document.getElementById('videoGrid');
+const loader = document.getElementById('loader');
+const searchInput = document.getElementById('searchInput');
+const stats = document.getElementById('stats');
+const empty = document.getElementById('empty');
+
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
+const player = document.getElementById('player');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+
+let allVideos = [];
+let filteredVideos = [];
+
+async function fetchAllVideos() {
+
+    let page = 1;
+
+    while (true) {
+
+        const url = `https://avdbapi.com/api.php/provide/vod?ac=detail&pg=${page}&pagesize=100`;
+
+        try {
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.list && data.list.length) {
+                allVideos.push(...data.list);
+            }
+
+            stats.innerText = `Загружено видео: ${allVideos.length}`;
+
+            renderVideos(allVideos);
+
+            if (page >= data.pagecount) break;
+
+            page++;
+
+        } catch (err) {
+            console.error(err);
+            break;
+        }
+    }
+
+    loader.style.display = 'none';
+
+    filteredVideos = allVideos;
+
+    stats.innerText = `Всего видео: ${allVideos.length.toLocaleString()}`;
+}
+
+function renderVideos(videos) {
+
+    videoGrid.innerHTML = '';
+
+    if (!videos.length) {
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+
+    videos.forEach(video => {
+
+        const title = video.name || 'No title';
+
+        const thumb =
+            video.thumb_url ||
+            video.poster_url ||
+            'https://via.placeholder.com/800x450?text=No+Image';
+
+        const country = video.country || 'Unknown';
+
+        const tag = video.tag || 'Video';
+
+        const embed =
+            video?.Full?.link_embed ||
+            '';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+            <div class="thumb">
+                <img src="${thumb}" loading="lazy">
+                <div class="play">▶</div>
+            </div>
+
+            <div class="content">
+                <div class="title">${title}</div>
+
+                <div class="meta">
+                    <div class="badge">${country}</div>
+                    <div class="badge">${tag}</div>
+                </div>
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            openModal(video, embed);
+        });
+
+        videoGrid.appendChild(card);
+
+    });
+}
+
+function openModal(video, embed) {
+
+    modal.classList.add('active');
+
+    modalTitle.innerText = video.name || 'No title';
+
+    modalDesc.innerText =
+        video.description ||
+        'Описание отсутствует';
+
+    if (embed) {
+
+        player.innerHTML = `
+            <iframe
+                src="${embed}"
+                allowfullscreen
+                referrerpolicy="origin"
+            ></iframe>
+        `;
+
+    } else {
+
+        player.innerHTML = `
+            <div style="
+                width:100%;
+                height:100%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                color:#888;
+                font-size:18px;
+            ">
+                Видео недоступно
+            </div>
+        `;
+    }
+}
+
+closeModal.addEventListener('click', closePlayer);
+
+modal.addEventListener('click', e => {
+    if (e.target === modal) {
+        closePlayer();
+    }
+});
+
+function closePlayer() {
+    modal.classList.remove('active');
+    player.innerHTML = '';
+}
+
+searchInput.addEventListener('input', e => {
+
+    const value = e.target.value.toLowerCase().trim();
+
+    filteredVideos = allVideos.filter(video => {
+
+        const title =
+            (video.name || '').toLowerCase();
+
+        const original =
+            (video.original_name || '').toLowerCase();
+
+        const desc =
+            (video.description || '').toLowerCase();
+
+        return (
+            title.includes(value) ||
+            original.includes(value) ||
+            desc.includes(value)
+        );
+    });
+
+    stats.innerText =
+        `Найдено: ${filteredVideos.length.toLocaleString()}`;
+
+    renderVideos(filteredVideos);
+});
+
+fetchAllVideos();
+</script>
+
+</body>
+</html>
