@@ -1,40 +1,389 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Premium Video Player</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-.video-wrapper {
-    width: 100%;
-    max-width: 1000px;
-    margin: auto;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: #000;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-.video-wrapper iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
+:root{
+    --bg:#050505;
+    --card:#0d0d0d;
+    --border:rgba(255,255,255,0.08);
+    --text:#ffffff;
+    --muted:#a1a1aa;
+    --accent:#ff0055;
+    --accent2:#ff3d81;
+    --shadow:0 20px 80px rgba(255,0,85,.25);
+}
+
+html,
+body{
+    width:100%;
+    min-height:100%;
+    font-family:'Inter',sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(255,0,85,.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(120,0,255,.18), transparent 35%),
+        linear-gradient(to bottom, #050505, #090909);
+    color:var(--text);
+    overflow-x:hidden;
+}
+
+body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+
+.bg-grid{
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    mask-image:linear-gradient(to bottom, rgba(255,255,255,.5), transparent);
+    pointer-events:none;
+}
+
+.container{
+    width:100%;
+    max-width:1400px;
+    position:relative;
+    z-index:2;
+}
+
+.hero{
+    margin-bottom:28px;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 16px;
+    border-radius:999px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(12px);
+    margin-bottom:18px;
+    font-size:14px;
+    color:#fff;
+}
+
+.badge::before{
+    content:"";
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 12px var(--accent);
+}
+
+.hero h1{
+    font-size:clamp(38px,6vw,78px);
+    font-weight:800;
+    line-height:1;
+    letter-spacing:-3px;
+    margin-bottom:18px;
+}
+
+.gradient-text{
+    background:linear-gradient(90deg,#fff,#ff6ca8,#ff0055);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+    max-width:760px;
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.7;
+}
+
+.player-card{
+    position:relative;
+    border-radius:34px;
+    overflow:hidden;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--border);
+    backdrop-filter:blur(20px);
+    box-shadow:
+        var(--shadow),
+        inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.player-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:rgba(255,255,255,.02);
+}
+
+.left{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.logo{
+    width:52px;
+    height:52px;
+    border-radius:18px;
+    background:linear-gradient(135deg,var(--accent),#7200ff);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:800;
+    box-shadow:0 10px 30px rgba(255,0,85,.35);
+}
+
+.title h2{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:4px;
+}
+
+.title span{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.actions{
+    display:flex;
+    gap:12px;
+}
+
+.action-btn{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.04);
+    color:#fff;
+    cursor:pointer;
+    transition:.25s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(12px);
+}
+
+.action-btn:hover{
+    transform:translateY(-2px);
+    background:rgba(255,0,85,.15);
+    border-color:rgba(255,0,85,.4);
+    box-shadow:0 10px 25px rgba(255,0,85,.25);
+}
+
+.video-wrapper{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:#000;
+}
+
+.video-wrapper::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(to top, rgba(0,0,0,.45), transparent 20%),
+        linear-gradient(to bottom, rgba(0,0,0,.25), transparent 15%);
+    pointer-events:none;
+    z-index:2;
+}
+
+.video-wrapper iframe{
+    width:100%;
+    height:100%;
+    border:0;
+}
+
+.player-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    padding:20px 24px;
+    flex-wrap:wrap;
+}
+
+.meta{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+}
+
+.meta-item{
+    padding:10px 16px;
+    border-radius:14px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.06);
+    color:#d4d4d8;
+    font-size:14px;
+}
+
+.watch-btn{
+    border:none;
+    outline:none;
+    cursor:pointer;
+    padding:14px 24px;
+    border-radius:18px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
+    transition:.3s ease;
+    box-shadow:0 15px 35px rgba(255,0,85,.35);
+}
+
+.watch-btn:hover{
+    transform:translateY(-2px) scale(1.02);
+    box-shadow:0 20px 45px rgba(255,0,85,.45);
+}
+
+.glow{
+    position:absolute;
+    width:500px;
+    height:500px;
+    background:radial-gradient(circle, rgba(255,0,85,.22), transparent 70%);
+    top:-250px;
+    right:-150px;
+    pointer-events:none;
+}
+
+@media(max-width:768px){
+
+    body{
+        padding:20px 12px;
+    }
+
+    .player-card{
+        border-radius:24px;
+    }
+
+    .player-top,
+    .player-bottom{
+        padding:16px;
+    }
+
+    .hero p{
+        font-size:15px;
+    }
+
+    .actions{
+        display:none;
+    }
+
+    .logo{
+        width:46px;
+        height:46px;
+        border-radius:14px;
+    }
+
+    .watch-btn{
+        width:100%;
+    }
+
+    .player-bottom{
+        align-items:stretch;
+    }
 }
 </style>
 </head>
+
 <body>
 
-<div class="video-wrapper">
-    <!--<iframe
-        src="https://anonmp4.help/embed/ALojS3IwPZWpBNf"
-        allowfullscreen
-        allow="autoplay; fullscreen; picture-in-picture">
-    </iframe>-->
+<div class="bg-grid"></div>
 
-    <iframe width="1920" height="1080"
-        src="https://www.eporner.com/embed/0ZNTJa1OAeV/"
-        frameborder="0"
-        allowfullscreen>
-    </iframe>
+<div class="container">
+
+    <section class="hero">
+        <div class="badge">Ultra HD Streaming Experience</div>
+
+        <h1>
+            Premium <span class="gradient-text">Video Player</span>
+        </h1>
+
+        <p>
+            Современный glassmorphism дизайн с cinematic атмосферой,
+            адаптивным интерфейсом и премиальным оформлением для онлайн просмотра видео.
+        </p>
+    </section>
+
+    <div class="player-card">
+
+        <div class="glow"></div>
+
+        <div class="player-top">
+
+            <div class="left">
+                <div class="logo">▶</div>
+
+                <div class="title">
+                    <h2>Streaming Player</h2>
+                    <span>Full HD • Adaptive Quality • Embedded Video</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="action-btn">❤</button>
+                <button class="action-btn">⤴</button>
+                <button class="action-btn">⚙</button>
+            </div>
+
+        </div>
+
+        <div class="video-wrapper">
+
+            <!--<iframe
+                src="https://anonmp4.help/embed/ALojS3IwPZWpBNf"
+                allowfullscreen
+                allow="autoplay; fullscreen; picture-in-picture">
+            </iframe>-->
+
+            <iframe
+                src="https://www.eporner.com/embed/0ZNTJa1OAeV/"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+        <div class="player-bottom">
+
+            <div class="meta">
+                <div class="meta-item">4K Ready</div>
+                <div class="meta-item">Fast CDN</div>
+                <div class="meta-item">Glass UI</div>
+                <div class="meta-item">Responsive</div>
+            </div>
+
+            <button class="watch-btn">
+                Смотреть сейчас
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
 </body>
