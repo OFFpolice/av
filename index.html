@@ -6,6 +6,9 @@
 
 <title>Video Player</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <style>
 *{
     margin:0;
@@ -13,19 +16,119 @@
     box-sizing:border-box;
 }
 
+:root{
+    --bg:#050505;
+    --card:#0d0d0d;
+    --border:rgba(255,255,255,0.08);
+    --text:#ffffff;
+    --muted:#9b9b9b;
+    --accent:#ff0055;
+}
+
 html,
 body{
     width:100%;
-    height:100%;
-    background:#000;
-    overflow:hidden;
+    min-height:100%;
+    background:
+        radial-gradient(circle at top, rgba(255,0,85,0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255,0,85,0.08), transparent 30%),
+        var(--bg);
+    color:var(--text);
     font-family:Arial,sans-serif;
+    overflow-x:hidden;
 }
 
 body{
     display:flex;
-    align-items:flex-start;
     justify-content:center;
+    padding:20px;
+}
+
+.page{
+    width:100%;
+    max-width:1400px;
+}
+
+.topbar{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+    padding:14px 18px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--border);
+    backdrop-filter:blur(18px);
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo-dot{
+    width:14px;
+    height:14px;
+    background:var(--accent);
+    box-shadow:
+        0 0 10px var(--accent),
+        0 0 30px var(--accent);
+}
+
+.logo h1{
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+.actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.action-btn{
+    height:42px;
+    padding:0 18px;
+    border:none;
+    outline:none;
+    cursor:pointer;
+    background:rgba(255,255,255,0.05);
+    color:#fff;
+    font-size:14px;
+    transition:.25s;
+    border:1px solid rgba(255,255,255,0.06);
+}
+
+.action-btn:hover{
+    background:rgba(255,0,85,0.14);
+    border-color:rgba(255,0,85,0.35);
+    transform:translateY(-2px);
+}
+
+.player-card{
+    position:relative;
+    overflow:hidden;
+    background:var(--card);
+    border:1px solid rgba(255,255,255,0.06);
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.02),
+        0 30px 80px rgba(0,0,0,0.7);
+}
+
+.player-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.04),
+            transparent 20%
+        );
+    pointer-events:none;
+    z-index:1;
 }
 
 .video-wrapper{
@@ -41,17 +144,274 @@ body{
     border:0;
     display:block;
 }
+
+.player-info{
+    padding:22px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,0.02),
+            rgba(255,255,255,0.01)
+        );
+    border-top:1px solid rgba(255,255,255,0.05);
+}
+
+.info-left h2{
+    font-size:24px;
+    margin-bottom:10px;
+    font-weight:700;
+}
+
+.meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.meta span{
+    padding:8px 14px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.watch-btn{
+    min-width:160px;
+    height:52px;
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(135deg,#ff0055,#8f0030);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.5px;
+    transition:.25s;
+    box-shadow:
+        0 10px 30px rgba(255,0,85,0.35);
+}
+
+.watch-btn:hover{
+    transform:translateY(-2px) scale(1.02);
+    box-shadow:
+        0 16px 40px rgba(255,0,85,0.45);
+}
+
+.bottom-grid{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:18px;
+}
+
+.panel{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06);
+    padding:22px;
+}
+
+.panel h3{
+    margin-bottom:14px;
+    font-size:18px;
+}
+
+.description{
+    color:#b5b5b5;
+    line-height:1.7;
+    font-size:15px;
+}
+
+.side-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.side-item{
+    display:flex;
+    gap:12px;
+    padding:10px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.04);
+    transition:.25s;
+    cursor:pointer;
+}
+
+.side-item:hover{
+    background:rgba(255,0,85,0.08);
+    border-color:rgba(255,0,85,0.18);
+}
+
+.thumb{
+    width:120px;
+    aspect-ratio:16/9;
+    background:
+        linear-gradient(
+            135deg,
+            #1b1b1b,
+            #111
+        );
+    position:relative;
+    overflow:hidden;
+}
+
+.thumb::before{
+    content:"▶";
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:26px;
+    opacity:.8;
+}
+
+.side-content h4{
+    font-size:14px;
+    margin-bottom:6px;
+    line-height:1.4;
+}
+
+.side-content p{
+    color:#8c8c8c;
+    font-size:12px;
+}
+
+@media(max-width:980px){
+
+    body{
+        padding:0;
+    }
+
+    .topbar{
+        padding:14px;
+    }
+
+    .player-info{
+        flex-direction:column;
+    }
+
+    .watch-btn{
+        width:100%;
+    }
+
+    .bottom-grid{
+        grid-template-columns:1fr;
+    }
+
+    .panel{
+        border-left:none;
+        border-right:none;
+    }
+}
 </style>
 </head>
 
 <body>
 
-<div class="video-wrapper">
+<div class="page">
 
-    <iframe
-        src="https://www.eporner.com/embed/0ZNTJa1OAeV/"
-        allowfullscreen>
-    </iframe>
+    <div class="topbar">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            <h1>VIDEO PLAYER</h1>
+        </div>
+
+        <div class="actions">
+            <button class="action-btn">Главная</button>
+            <button class="action-btn">Категории</button>
+            <button class="action-btn">Избранное</button>
+        </div>
+    </div>
+
+    <div class="player-card">
+
+        <div class="video-wrapper">
+
+            <iframe
+                src="https://www.eporner.com/embed/0ZNTJa1OAeV/"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+        <div class="player-info">
+
+            <div class="info-left">
+                <h2>Premium Video Player</h2>
+
+                <div class="meta">
+                    <span>HD 1080p</span>
+                    <span>Online Streaming</span>
+                    <span>Ultra Fast CDN</span>
+                </div>
+            </div>
+
+            <button class="watch-btn">
+                WATCH NOW
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="bottom-grid">
+
+        <div class="panel">
+
+            <h3>Описание</h3>
+
+            <div class="description">
+                Современный минималистичный интерфейс видеоплеера
+                с акцентом на контент, высокой контрастностью,
+                стеклянными эффектами и премиальным темным стилем.
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <h3>Рекомендации</h3>
+
+            <div class="side-list">
+
+                <div class="side-item">
+                    <div class="thumb"></div>
+
+                    <div class="side-content">
+                        <h4>Trending Video Collection</h4>
+                        <p>HD Streaming</p>
+                    </div>
+                </div>
+
+                <div class="side-item">
+                    <div class="thumb"></div>
+
+                    <div class="side-content">
+                        <h4>Ultra Quality Content</h4>
+                        <p>4K Available</p>
+                    </div>
+                </div>
+
+                <div class="side-item">
+                    <div class="thumb"></div>
+
+                    <div class="side-content">
+                        <h4>Premium Cinema Player</h4>
+                        <p>Fast Loading</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
