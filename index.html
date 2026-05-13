@@ -13,6 +13,7 @@
             -webkit-tap-highlight-color: transparent;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+
         body {
             background: #000;
             color: #fff;
@@ -21,6 +22,8 @@
             justify-content: center;
             overflow: hidden;
         }
+
+        /* ── Main app shell ── */
         .app {
             width: 100%;
             max-width: 480px;
@@ -30,9 +33,12 @@
             flex-direction: column;
             background: #000;
         }
+
+        /* ── Header ── */
         .header {
-            padding: calc(var(--tg-safe-area-inset-top) + 13px) 16px 16px;
+            padding: calc(var(--safe-top, 0px) + 13px) 16px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
         }
         .header h1 {
             font-size: 22px;
@@ -41,14 +47,8 @@
             margin-bottom: 12px;
             color: #fff;
         }
-        .search-container {
-            display: flex;
-            gap: 10px;
-        }
-        .input-wrapper {
-            position: relative;
-            flex: 1;
-        }
+        .search-container { display: flex; gap: 10px; }
+        .input-wrapper { position: relative; flex: 1; }
         #searchInput {
             width: 100%;
             padding: 14px 40px 14px 16px;
@@ -78,7 +78,7 @@
             user-select: none;
             transition: background 0.2s;
         }
-        .clear-btn:hover { background: #666; }
+        .clear-btn:hover  { background: #666; }
         .clear-btn:active { background: #888; }
         #searchBtn {
             padding: 14px 24px;
@@ -92,19 +92,19 @@
             transition: opacity 0.2s;
             white-space: nowrap;
         }
-        #searchBtn:active { opacity: 0.7; }
+        #searchBtn:active   { opacity: 0.7; }
         #searchBtn:disabled { opacity: 0.5; pointer-events: none; }
+
+        /* ── Scrollable content ── */
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 16px 16px calc(var(--tg-safe-area-inset-bottom, 0px) + 20px);
+            padding: 16px 16px calc(var(--safe-bottom, 0px) + 20px);
             scroll-behavior: smooth;
         }
-        .videos-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
+        .videos-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+        /* ── Video card ── */
         .video-card {
             background: #111;
             border-radius: 16px;
@@ -153,6 +153,9 @@
             border: none;
             cursor: pointer;
         }
+        .video-link:active { opacity: 0.75; }
+
+        /* ── Status messages ── */
         .status-message {
             text-align: center;
             padding: 24px 16px;
@@ -161,16 +164,11 @@
         }
         .error-message { color: #ff4d4d; }
         .hidden { display: none !important; }
-        .loader {
-            text-align: center;
-            padding: 20px;
-            color: #aaa;
-        }
+        .loader { text-align: center; padding: 20px; color: #aaa; }
         .loader::after {
             content: "";
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 20px; height: 20px;
             margin-left: 8px;
             border: 2px solid #aaa;
             border-top-color: transparent;
@@ -180,74 +178,97 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Modal Player — matching app design ── */
+        /* ══════════════════════════════════════
+           Modal Player
+           Slides in from the right as a full
+           screen "page" — same visual language
+        ══════════════════════════════════════ */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.96);
-            z-index: 1000;
+            z-index: 100;
+            background: #000;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            overflow-y: auto;
-            opacity: 0;
+            justify-content: center;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
-            transition: opacity 0.25s;
         }
         .modal-overlay.active {
-            opacity: 1;
+            transform: translateX(0);
             pointer-events: all;
         }
 
-        /* Same max-width + padding as .app */
+        /* Same max-width + column layout as .app */
         .modal-inner {
             width: 100%;
             max-width: 480px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            padding: calc(var(--tg-safe-area-inset-top, 0px) + 13px) 16px calc(var(--tg-safe-area-inset-bottom, 0px) + 20px);
-            gap: 0;
+            background: #000;
         }
 
-        /* Header row — mirrors .header */
+        /* Modal "header" — identical rules to .header */
         .modal-header {
+            padding: calc(var(--safe-top, 0px) + 13px) 16px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 16px;
+            gap: 12px;
         }
+
+        /*
+         * In-app back button — shown only when
+         * tg.BackButton is NOT available (e.g. desktop / debug).
+         * Same pill shape + bg as #searchInput field.
+         */
+        .modal-back {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 14px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .modal-back:active { background: #2a2a2a; }
+        .modal-back.hidden { display: none; }
+
         .modal-header-title {
             font-size: 22px;
             font-weight: 600;
             color: #fff;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .modal-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 14px;          /* matches card radius language */
-            background: #1a1a1a;          /* matches #searchInput bg */
-            border: 1px solid rgba(255,255,255,0.08);
-            color: #fff;
-            font-size: 18px;
-            line-height: 36px;
-            text-align: center;
-            cursor: pointer;
-            transition: background 0.2s;
-            flex-shrink: 0;
-        }
-        .modal-close:hover  { background: #2a2a2a; }
-        .modal-close:active { background: #333; }
 
-        /* Player container — mirrors .video-card */
-        .modal-player-wrap {
+        /* Modal scrollable body — same as .content */
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 16px calc(var(--safe-bottom, 0px) + 20px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Player card — same as .video-card */
+        .modal-player-card {
             background: #111;
             border-radius: 16px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 12px;
+            flex-shrink: 0;
         }
         .modal-player {
             width: 100%;
@@ -261,22 +282,25 @@
             display: block;
         }
 
-        /* Title block — mirrors .video-info */
-        .modal-title-wrap {
+        /* Title card — same as .video-info */
+        .modal-title-card {
             background: #111;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 14px;
+            padding: 14px;
+            flex-shrink: 0;
         }
         .modal-title {
             font-size: 14px;
             font-weight: 500;
             color: #fff;
-            line-height: 1.4;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
+
+    <!-- ── Main app ── -->
     <div id="app" class="app">
         <header class="header">
             <h1>EPORNER</h1>
@@ -291,251 +315,286 @@
 
         <main class="content" id="content">
             <div id="videosGrid" class="videos-grid"></div>
-            <div id="initialMessage" class="status-message hidden">Enter a query to start searching</div>
+            <div id="initialMessage"   class="status-message hidden">Enter a query to start searching</div>
             <div id="loadingIndicator" class="loader hidden">Loading</div>
             <div id="noResultsMessage" class="status-message hidden">No videos found</div>
-            <div id="errorMessage" class="status-message error-message hidden">Something went wrong. Try again.</div>
-            <div id="endMessage" class="status-message hidden">You've reached the end</div>
+            <div id="errorMessage"     class="status-message error-message hidden">Something went wrong. Try again.</div>
+            <div id="endMessage"       class="status-message hidden">You've reached the end</div>
         </main>
     </div>
 
-    <!-- Modal Player -->
-    <div class="modal-overlay" id="modalOverlay">
+    <!-- ── Modal Player ── -->
+    <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
         <div class="modal-inner">
-            <!-- Header mirrors app header -->
+
             <div class="modal-header">
+                <!-- Visible only when tg.BackButton is unavailable -->
+                <button class="modal-back hidden" id="modalBack" aria-label="Back">‹</button>
                 <span class="modal-header-title">Now Playing</span>
-                <button class="modal-close" id="modalClose">✕</button>
             </div>
 
-            <!-- Player card -->
-            <div class="modal-player-wrap">
-                <div class="modal-player" id="modalPlayer"></div>
+            <div class="modal-body">
+                <div class="modal-player-card">
+                    <div class="modal-player" id="modalPlayer"></div>
+                </div>
+                <div class="modal-title-card">
+                    <div class="modal-title" id="modalTitle"></div>
+                </div>
             </div>
 
-            <!-- Title card -->
-            <div class="modal-title-wrap">
-                <div class="modal-title" id="modalTitle"></div>
-            </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            const tg = window.Telegram?.WebApp;
-            if (!tg || !tg.initData) {
-                console.warn('Not running in Telegram Web App');
-            } else {
-                tg.ready();
-                tg.expand();
-                if (tg.isVersionAtLeast('8.0')) tg.requestFullscreen();
-                tg.lockOrientation();
-                tg.disableVerticalSwipes();
-                tg.enableClosingConfirmation();
+    (function () {
+        /* ── Telegram SDK ── */
+        const tg = window.Telegram?.WebApp;
+        const hasTg = !!(tg?.initData);
+
+        if (hasTg) {
+            tg.ready();
+            tg.expand();
+            if (tg.isVersionAtLeast('8.0')) tg.requestFullscreen();
+            tg.lockOrientation();
+            tg.disableVerticalSwipes();
+            tg.enableClosingConfirmation();
+        }
+
+        /* ── Safe-area CSS variables ── */
+        function applySafeAreas() {
+            // Try newer safeAreaInset first, fall back to CSS env()
+            const top    = tg?.safeAreaInset?.top    ?? tg?.contentSafeAreaInset?.top    ?? 0;
+            const bottom = tg?.safeAreaInset?.bottom ?? tg?.contentSafeAreaInset?.bottom ?? 0;
+            document.documentElement.style.setProperty('--safe-top',    top    + 'px');
+            document.documentElement.style.setProperty('--safe-bottom', bottom + 'px');
+        }
+        applySafeAreas();
+        if (hasTg) tg.onEvent('safeAreaChanged', applySafeAreas);
+
+        /* ── Viewport height ── */
+        function setViewportHeight() {
+            if (hasTg) document.documentElement.style.setProperty(
+                '--tg-viewport-height', tg.viewportStableHeight + 'px'
+            );
+        }
+        setViewportHeight();
+        if (hasTg) tg.onEvent('viewportChanged', setViewportHeight);
+
+        /* ── DOM refs ── */
+        const searchInput      = document.getElementById('searchInput');
+        const searchBtn        = document.getElementById('searchBtn');
+        const clearBtn         = document.getElementById('clearBtn');
+        const contentEl        = document.getElementById('content');
+        const videosGrid       = document.getElementById('videosGrid');
+        const initialMessage   = document.getElementById('initialMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const errorMessage     = document.getElementById('errorMessage');
+        const endMessage       = document.getElementById('endMessage');
+        const modalOverlay     = document.getElementById('modalOverlay');
+        const modalPlayer      = document.getElementById('modalPlayer');
+        const modalTitle       = document.getElementById('modalTitle');
+        const modalBack        = document.getElementById('modalBack');
+
+        /* ── Use native TG BackButton if available, else show in-app button ── */
+        const useNativeBack = hasTg && !!tg.BackButton;
+
+        if (!useNativeBack) {
+            // Show in-app back button as fallback
+            modalBack.classList.remove('hidden');
+        }
+
+        function onBackPressed() {
+            if (modalOverlay.classList.contains('active')) closePlayer();
+        }
+
+        modalBack.addEventListener('click', onBackPressed);
+
+        /* ── Modal open / close ── */
+        function openPlayer(embedUrl, title) {
+            modalPlayer.innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
+            modalTitle.textContent = title;
+            modalOverlay.classList.add('active');
+            modalOverlay.setAttribute('aria-hidden', 'false');
+
+            if (useNativeBack) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(onBackPressed);
             }
+        }
 
-            const EPORNER_API = 'https://www.eporner.com/api/v2/video/search/';
-            const PER_PAGE = 10;
+        function closePlayer() {
+            modalOverlay.classList.remove('active');
+            modalOverlay.setAttribute('aria-hidden', 'true');
+            // Stop video playback
+            modalPlayer.innerHTML = '';
 
-            let currentQuery = '';
-            let currentPage = 1;
-            let totalPages = 0;
-            let isLoading = false;
-            let reachedEnd = false;
-
-            const searchInput = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const contentEl = document.getElementById('content');
-            const videosGrid = document.getElementById('videosGrid');
-            const initialMessage = document.getElementById('initialMessage');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            const errorMessage = document.getElementById('errorMessage');
-            const endMessage = document.getElementById('endMessage');
-
-            // Modal
-            const modalOverlay = document.getElementById('modalOverlay');
-            const modalPlayer = document.getElementById('modalPlayer');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalClose = document.getElementById('modalClose');
-
-            function openPlayer(embedUrl, title) {
-                modalPlayer.innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
-                modalTitle.textContent = title;
-                modalOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
+            if (useNativeBack) {
+                tg.BackButton.hide();
+                tg.BackButton.offClick(onBackPressed);
             }
+        }
 
-            function closePlayer() {
-                modalOverlay.classList.remove('active');
-                modalPlayer.innerHTML = '';
-                document.body.style.overflow = '';
-            }
+        // Desktop / debug: Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closePlayer();
+        });
 
-            modalClose.addEventListener('click', closePlayer);
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) closePlayer();
-            });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closePlayer();
-            });
+        /* ── Search state ── */
+        const EPORNER_API = 'https://www.eporner.com/api/v2/video/search/';
+        const PER_PAGE = 10;
 
-            function toggleClearButton() {
-                clearBtn.style.display = searchInput.value.trim().length > 0 ? 'block' : 'none';
-            }
+        let currentQuery = '';
+        let currentPage  = 1;
+        let totalPages   = 0;
+        let isLoading    = false;
+        let reachedEnd   = false;
 
-            function clearSearch() {
-                searchInput.value = '';
-                currentQuery = '';
-                currentPage = 1;
-                reachedEnd = false;
-                videosGrid.innerHTML = '';
-                hideAllStatusMessages();
-                toggleClearButton();
-            }
+        function toggleClearButton() {
+            clearBtn.style.display = searchInput.value.trim().length > 0 ? 'block' : 'none';
+        }
 
-            function hideAllStatusMessages() {
-                initialMessage.classList.add('hidden');
-                noResultsMessage.classList.add('hidden');
-                errorMessage.classList.add('hidden');
-                endMessage.classList.add('hidden');
-            }
-
-            function showLoading(show) {
-                loadingIndicator.classList.toggle('hidden', !show);
-            }
-
-            function buildApiUrl(query, page) {
-                const params = new URLSearchParams({
-                    query, per_page: String(PER_PAGE), page: String(page),
-                    thumbsize: 'big', order: 'top-weekly',
-                    gay: '1', lq: '1', format: 'json'
-                });
-                return `${EPORNER_API}?${params.toString()}`;
-            }
-
-            function createVideoCard(video) {
-                const thumbSrc = video.thumbs?.[0]?.src || 'https://via.placeholder.com/320x180?text=No+Image';
-                const rawTitle = video.title || 'Untitled';
-                const title = rawTitle
-                    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-                    .replace(/'/g,'&#039;');
-                const embedUrl = video.embed || '';
-
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                card.innerHTML = `
-                    <img class="video-thumb" src="${thumbSrc}" alt="" loading="lazy">
-                    <div class="video-info">
-                        <div class="video-title">${title}</div>
-                        <button class="video-link play-btn">▶ Play</button>
-                    </div>
-                `;
-
-                card.querySelector('.play-btn').addEventListener('click', () => {
-                    if (embedUrl) openPlayer(embedUrl, rawTitle);
-                });
-
-                return card;
-            }
-
-            function renderVideos(videos) {
-                for (const video of videos) {
-                    videosGrid.appendChild(createVideoCard(video));
-                }
-            }
-
-            async function loadVideos(isNewSearch = false) {
-                if (isLoading) return;
-                if (!currentQuery.trim()) return;
-                if (reachedEnd && !isNewSearch) return;
-
-                if (isNewSearch) {
-                    currentPage = 1;
-                    reachedEnd = false;
-                    videosGrid.innerHTML = '';
-                    hideAllStatusMessages();
-                }
-                showLoading(true);
-                isLoading = true;
-                searchBtn.disabled = true;
-
-                try {
-                    const response = await fetch(buildApiUrl(currentQuery, currentPage));
-                    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-                    const data = await response.json();
-
-                    totalPages = data.total_pages ?? 0;
-                    const videos = data.videos || [];
-
-                    if (isNewSearch && videos.length === 0) {
-                        hideAllStatusMessages();
-                        noResultsMessage.classList.remove('hidden');
-                        reachedEnd = true;
-                        return;
-                    }
-
-                    renderVideos(videos);
-                    currentPage++;
-
-                    if (currentPage > totalPages) {
-                        reachedEnd = true;
-                        hideAllStatusMessages();
-                        if (videos.length > 0) endMessage.classList.remove('hidden');
-                    } else if (isNewSearch) {
-                        hideAllStatusMessages();
-                    }
-
-                } catch (error) {
-                    console.error('API error:', error);
-                    hideAllStatusMessages();
-                    errorMessage.classList.remove('hidden');
-                    reachedEnd = false;
-                } finally {
-                    isLoading = false;
-                    searchBtn.disabled = false;
-                    showLoading(false);
-                }
-            }
-
-            function onContentScroll() {
-                if (isLoading || reachedEnd || !currentQuery.trim()) return;
-                const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                if (scrollTop + clientHeight >= scrollHeight - 300) loadVideos(false);
-            }
-
-            function performSearch() {
-                const query = searchInput.value.trim();
-                hideAllStatusMessages();
-                if (!query) {
-                    initialMessage.classList.remove('hidden');
-                    videosGrid.innerHTML = '';
-                    currentQuery = '';
-                    currentPage = 1;
-                    reachedEnd = false;
-                    return;
-                }
-                currentQuery = query;
-                loadVideos(true);
-            }
-
-            searchInput.addEventListener('input', toggleClearButton);
-            clearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearSearch(); hideAllStatusMessages(); });
-            searchBtn.addEventListener('click', performSearch);
-            searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
-            contentEl.addEventListener('scroll', onContentScroll);
-
+        function clearSearch() {
+            searchInput.value = '';
+            currentQuery = '';
+            currentPage  = 1;
+            reachedEnd   = false;
+            videosGrid.innerHTML = '';
             hideAllStatusMessages();
             toggleClearButton();
+        }
 
-            function setViewportHeight() {
-                if (tg) document.documentElement.style.setProperty('--tg-viewport-height', tg.viewportStableHeight + 'px');
+        function hideAllStatusMessages() {
+            initialMessage.classList.add('hidden');
+            noResultsMessage.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            endMessage.classList.add('hidden');
+        }
+
+        function showLoading(show) {
+            loadingIndicator.classList.toggle('hidden', !show);
+        }
+
+        function buildApiUrl(query, page) {
+            const params = new URLSearchParams({
+                query, per_page: String(PER_PAGE), page: String(page),
+                thumbsize: 'big', order: 'top-weekly',
+                gay: '1', lq: '1', format: 'json'
+            });
+            return `${EPORNER_API}?${params.toString()}`;
+        }
+
+        function createVideoCard(video) {
+            const thumbSrc  = video.thumbs?.[0]?.src || 'https://via.placeholder.com/320x180?text=No+Image';
+            const rawTitle  = video.title || 'Untitled';
+            const safeTitle = rawTitle
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+                .replace(/'/g,'&#039;');
+            const embedUrl = video.embed || '';
+
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <img class="video-thumb" src="${thumbSrc}" alt="" loading="lazy">
+                <div class="video-info">
+                    <div class="video-title">${safeTitle}</div>
+                    <button class="video-link play-btn">&#9654; Play</button>
+                </div>
+            `;
+            card.querySelector('.play-btn').addEventListener('click', () => {
+                if (embedUrl) openPlayer(embedUrl, rawTitle);
+            });
+            return card;
+        }
+
+        function renderVideos(videos) {
+            videos.forEach(v => videosGrid.appendChild(createVideoCard(v)));
+        }
+
+        async function loadVideos(isNewSearch = false) {
+            if (isLoading) return;
+            if (!currentQuery.trim()) return;
+            if (reachedEnd && !isNewSearch) return;
+
+            if (isNewSearch) {
+                currentPage  = 1;
+                reachedEnd   = false;
+                videosGrid.innerHTML = '';
+                hideAllStatusMessages();
             }
-            setViewportHeight();
-            if (tg) tg.onEvent('viewportChanged', setViewportHeight);
-        })();
+
+            showLoading(true);
+            isLoading = true;
+            searchBtn.disabled = true;
+
+            try {
+                const res  = await fetch(buildApiUrl(currentQuery, currentPage));
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                totalPages   = data.total_pages ?? 0;
+                const videos = data.videos || [];
+
+                if (isNewSearch && videos.length === 0) {
+                    hideAllStatusMessages();
+                    noResultsMessage.classList.remove('hidden');
+                    reachedEnd = true;
+                    return;
+                }
+
+                renderVideos(videos);
+                currentPage++;
+
+                if (currentPage > totalPages) {
+                    reachedEnd = true;
+                    hideAllStatusMessages();
+                    if (videos.length > 0) endMessage.classList.remove('hidden');
+                } else if (isNewSearch) {
+                    hideAllStatusMessages();
+                }
+            } catch (err) {
+                console.error('API error:', err);
+                hideAllStatusMessages();
+                errorMessage.classList.remove('hidden');
+                reachedEnd = false;
+            } finally {
+                isLoading = false;
+                searchBtn.disabled = false;
+                showLoading(false);
+            }
+        }
+
+        function onContentScroll() {
+            if (isLoading || reachedEnd || !currentQuery.trim()) return;
+            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+            if (scrollTop + clientHeight >= scrollHeight - 300) loadVideos(false);
+        }
+
+        function performSearch() {
+            const query = searchInput.value.trim();
+            hideAllStatusMessages();
+            if (!query) {
+                initialMessage.classList.remove('hidden');
+                videosGrid.innerHTML = '';
+                currentQuery = '';
+                currentPage  = 1;
+                reachedEnd   = false;
+                return;
+            }
+            currentQuery = query;
+            loadVideos(true);
+        }
+
+        searchInput.addEventListener('input', toggleClearButton);
+        clearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearSearch(); hideAllStatusMessages(); });
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
+        contentEl.addEventListener('scroll', onContentScroll);
+
+        hideAllStatusMessages();
+        toggleClearButton();
+    })();
     </script>
 </body>
 </html>
