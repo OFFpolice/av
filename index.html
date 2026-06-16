@@ -23,7 +23,6 @@
             overflow: hidden;
         }
 
-        /* ── Main app shell ── */
         .app {
             width: 100%;
             max-width: 480px;
@@ -34,7 +33,6 @@
             background: #000;
         }
 
-        /* ── Header ── */
         .header {
             padding: calc(var(--safe-top, 0px) + 13px) 16px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -95,7 +93,6 @@
         #searchBtn:active   { opacity: 0.7; }
         #searchBtn:disabled { opacity: 0.5; pointer-events: none; }
 
-        /* ── Scrollable content ── */
         .content {
             flex: 1;
             overflow-y: auto;
@@ -104,7 +101,6 @@
         }
         .videos-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 
-        /* ── Video card ── */
         .video-card {
             background: #111;
             border-radius: 16px;
@@ -155,7 +151,6 @@
         }
         .video-link:active { opacity: 0.75; }
 
-        /* ── Status messages ── */
         .status-message {
             text-align: center;
             padding: 24px 16px;
@@ -178,11 +173,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ══════════════════════════════════════
-           Modal Player
-           Slides in from the right as a full
-           screen "page" — same visual language
-        ══════════════════════════════════════ */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -199,7 +189,6 @@
             pointer-events: all;
         }
 
-        /* Same max-width + column layout as .app */
         .modal-inner {
             width: 100%;
             max-width: 480px;
@@ -209,7 +198,6 @@
             background: #000;
         }
 
-        /* Modal "header" — identical rules to .header */
         .modal-header {
             padding: calc(var(--safe-top, 0px) + 13px) 16px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -219,11 +207,6 @@
             gap: 12px;
         }
 
-        /*
-         * In-app back button — shown only when
-         * tg.BackButton is NOT available (e.g. desktop / debug).
-         * Same pill shape + bg as #searchInput field.
-         */
         .modal-back {
             width: 44px;
             height: 44px;
@@ -241,7 +224,6 @@
         }
         .modal-back:active { background: #2a2a2a; }
         .modal-back.hidden { display: none; }
-        /* Balances the left back-button so the title sits dead-centre */
         .modal-header-spacer { width: 44px; flex-shrink: 0; }
         .modal-back.hidden ~ .modal-header-spacer { display: none; }
 
@@ -256,7 +238,6 @@
             text-align: center;
         }
 
-        /* Modal scrollable body — same as .content */
         .modal-body {
             flex: 1;
             overflow-y: auto;
@@ -266,7 +247,6 @@
             gap: 12px;
         }
 
-        /* Player card — same as .video-card */
         .modal-player-card {
             background: #111;
             border-radius: 16px;
@@ -286,7 +266,6 @@
             display: block;
         }
 
-        /* Title card — same as .video-info */
         .modal-title-card {
             background: #111;
             border-radius: 16px;
@@ -304,7 +283,6 @@
 </head>
 <body>
 
-    <!-- ── Main app ── -->
     <div id="app" class="app">
         <header class="header">
             <h1>EPORNER</h1>
@@ -327,15 +305,12 @@
         </main>
     </div>
 
-    <!-- ── Modal Player ── -->
     <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
         <div class="modal-inner">
 
             <div class="modal-header">
-                <!-- Visible only when tg.BackButton is unavailable -->
                 <button class="modal-back hidden" id="modalBack" aria-label="Back">‹</button>
                 <span class="modal-header-title">EPORNER</span>
-                <!-- Spacer mirrors back button width so title stays truly centred -->
                 <div class="modal-header-spacer"></div>
             </div>
 
@@ -353,7 +328,6 @@
 
     <script>
     (function () {
-        /* ── Telegram SDK ── */
         const tg = window.Telegram?.WebApp;
         const hasTg = !!(tg?.initData);
 
@@ -366,9 +340,7 @@
             tg.enableClosingConfirmation();
         }
 
-        /* ── Safe-area CSS variables ── */
         function applySafeAreas() {
-            // Try newer safeAreaInset first, fall back to CSS env()
             const top    = tg?.safeAreaInset?.top    ?? tg?.contentSafeAreaInset?.top    ?? 0;
             const bottom = tg?.safeAreaInset?.bottom ?? tg?.contentSafeAreaInset?.bottom ?? 0;
             document.documentElement.style.setProperty('--safe-top',    top    + 'px');
@@ -377,7 +349,6 @@
         applySafeAreas();
         if (hasTg) tg.onEvent('safeAreaChanged', applySafeAreas);
 
-        /* ── Viewport height ── */
         function setViewportHeight() {
             if (hasTg) document.documentElement.style.setProperty(
                 '--tg-viewport-height', tg.viewportStableHeight + 'px'
@@ -386,7 +357,6 @@
         setViewportHeight();
         if (hasTg) tg.onEvent('viewportChanged', setViewportHeight);
 
-        /* ── DOM refs ── */
         const searchInput      = document.getElementById('searchInput');
         const searchBtn        = document.getElementById('searchBtn');
         const clearBtn         = document.getElementById('clearBtn');
@@ -402,11 +372,9 @@
         const modalTitle       = document.getElementById('modalTitle');
         const modalBack        = document.getElementById('modalBack');
 
-        /* ── Use native TG BackButton if available, else show in-app button ── */
         const useNativeBack = hasTg && !!tg.BackButton;
 
         if (!useNativeBack) {
-            // Show in-app back button as fallback
             modalBack.classList.remove('hidden');
         }
 
@@ -416,7 +384,6 @@
 
         modalBack.addEventListener('click', onBackPressed);
 
-        /* ── Modal open / close ── */
         function openPlayer(embedUrl, title) {
             modalPlayer.innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
             modalTitle.textContent = title;
@@ -432,7 +399,6 @@
         function closePlayer() {
             modalOverlay.classList.remove('active');
             modalOverlay.setAttribute('aria-hidden', 'true');
-            // Stop video playback
             modalPlayer.innerHTML = '';
 
             if (useNativeBack) {
@@ -441,12 +407,10 @@
             }
         }
 
-        // Desktop / debug: Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closePlayer();
         });
 
-        /* ── Search state ── */
         const EPORNER_API = 'https://www.eporner.com/api/v2/video/search/';
         const PER_PAGE = 50;
 
